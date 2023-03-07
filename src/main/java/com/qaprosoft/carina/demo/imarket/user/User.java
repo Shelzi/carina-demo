@@ -1,0 +1,13 @@
+package com.qaprosoft.carina.demo.imarket.user;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class User {
+    private String login;
+    private String password;
+    private String name;
+    private String phone;
+}
