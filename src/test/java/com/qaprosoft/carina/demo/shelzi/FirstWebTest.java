@@ -23,9 +23,7 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 
-import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 
 public class FirstWebTest implements IAbstractTest {
     HomePage homePage;
@@ -49,6 +47,7 @@ public class FirstWebTest implements IAbstractTest {
     public void testSearch() {
         String searchQuery = "IPhone";
         HeaderMenu headerMenu = homePage.getHeaderMenu();
+        Assert.assertTrue(headerMenu.isInputTextInSearchFieldPresent(2));
         ResultSearchPage resultSearchPage = headerMenu.showGoodsBySearchQuery(searchQuery);
         Assert.assertFalse(CollectionUtils.isEmpty(resultSearchPage.getSearchResultItemLinksList()), "Search result is empty");
     }
@@ -58,6 +57,7 @@ public class FirstWebTest implements IAbstractTest {
     public void testSpecificSearch() {
         String searchQuery = "Монитор AOC 16T2";
         HeaderMenu headerMenu = homePage.getHeaderMenu();
+        Assert.assertTrue(headerMenu.isInputTextInSearchFieldPresent(2));
         ResultSearchPage resultSearchPage = headerMenu.showGoodsBySearchQuery(searchQuery);
         Assert.assertFalse(resultSearchPage.getSingleItemName().getText().isEmpty());
         Assert.assertTrue(resultSearchPage.getSingleItemName().getText()
@@ -79,31 +79,27 @@ public class FirstWebTest implements IAbstractTest {
         resultSearchPage.clickOnManufacturerCheckboxChose();
         resultSearchPage.clickOnCpuModelMenuButton();
         resultSearchPage.clickOnCpuChose();
-        //resultSearchPage.clickOnListViewButton();
-        List<ExtendedWebElement> result = resultSearchPage.getSearchResultItemLinksList();
+        if (resultSearchPage.getListViewButton().isClickable() && !resultSearchPage.isListViewButtonActive()) {
+            resultSearchPage.clickOnListViewButton();
+        }
+        pause(3);
+        List<ExtendedWebElement> result = resultSearchPage.getResultSearchList();
         SoftAssert softAssert = new SoftAssert();
-        softAssert.assertTrue(result.get(0).findExtendedWebElement(By.xpath(".//a[@class = 'item-title']"))
-                .getAttribute("title")
-                .contains(manufacturer));
-        softAssert.assertTrue(result.get(0).findExtendedWebElement(By.xpath(".//div[@class = 'row list-info-price']//span[2]"))
-                .getText().contains(cpu));
-
-        /*Optional<ExtendedWebElement> optional = result.stream()
-                .filter(r -> (r.findExtendedWebElement(By.xpath("//a[@class = 'item-title']"))
-                                      .getAttribute("title")
-                                      .contains(manufacturer)
-                              &&
-                              r.findExtendedWebElement(By.xpath("//div[@class = 'row list-info-price']//span[2]"))
-                                      .getText().contains(cpu)))
-                .findAny();
-        Assert.assertTrue(optional.isPresent());*/
+        for (ExtendedWebElement e : result) {
+            softAssert.assertTrue(e.findExtendedWebElement(By.xpath(".//a[@class = 'item-title']"))
+                    .getAttribute("title")
+                    .contains(manufacturer));
+            softAssert.assertTrue(e.findExtendedWebElement(By.xpath(".//div[contains(@class, 'row list-info-price')]//div//span[contains(text(), '" + cpu + "')]"))
+                    .getText().equalsIgnoreCase(cpu));
+        }
+        softAssert.assertAll();
     }
 
     @Test(priority = 3)
     @MethodOwner(owner = "Shelzi")
     public void testAddToBucketSpecificGoods() {
+        //testLogin();
         String searchQuery = "Смартфон Apple iPhone 11 64GB Black A2221 (MHDA3CN/A)";
-        //String SelfCheckoutTown = R.TESTDATA.get("imarket_card_selfcheckouttown");
         int selfCheckoutTownId = 5416;
         int selfCheckoutStreetId = 998796;
         HeaderMenu headerMenu = homePage.getHeaderMenu();
@@ -112,20 +108,17 @@ public class FirstWebTest implements IAbstractTest {
         resultSearchPage.clickOnAddToBasketButtonSingleItemPage();
         Assert.assertTrue(resultSearchPage.getModalWindowItemName().getText().equalsIgnoreCase(searchQuery));
         CardPage cardPage = resultSearchPage.clickOnGoToBasketButtonModal();
+        Assert.assertTrue(cardPage.isNameInputPresent());
+        Assert.assertTrue(cardPage.isPhoneInputPresent());
         cardPage.typeUserContactInfoWithoutEmail(UserBuilder.getValidUser());
-        pause(1);
         cardPage.clickOnSelfCheckoutButton();
-        pause(1);
         cardPage.clickOnChosenSelfCheckoutTown(selfCheckoutTownId);
-        pause(1);
+        pause(2);
         cardPage.clickOnChosenSelfCheckoutStreet(selfCheckoutStreetId);
-        pause(1);
         cardPage.clickOnRandomDateToSelfCheckout();
-        pause(1);
+        pause(2);
         cardPage.clickOnRandomTimeToSelfCheckout();
-        pause(1);
         cardPage.clickOnPaymentOnDeliveryButton();
-        pause(1);
         cardPage.clickOnPaymentByCashButton();
         //Fake order and(/or) payment method, that assert a success
     }
@@ -138,12 +131,13 @@ public class FirstWebTest implements IAbstractTest {
         LoginItem loginItem = headerMenu.clickOnLoginButton();
         pause(1);
         loginItem.clickOnEmailTab();
-        pause(1);
-        loginItem.inputEmail(user.getLogin());
-        loginItem.inputPassword(user.getPassword());
+        Assert.assertTrue(loginItem.isLoginInputFieldPresent(2));
+        Assert.assertTrue(loginItem.isPasswordInputFieldPresent(2));
+        loginItem.inputUserCredentials(user);
         //loginItem.clickOnCaptcha();
-        pause(10);
+        //pause(10);
         //loginItem.clickOnSubmitLoginButton();
+        Assert.assertTrue(headerMenu.isLinkToPersonalPagePresent());
         Assert.assertTrue(headerMenu.getLinkToPersonalPage().getText().equalsIgnoreCase(user.getLogin()));
     }
 }

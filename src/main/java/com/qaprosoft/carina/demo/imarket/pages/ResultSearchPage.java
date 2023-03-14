@@ -43,9 +43,7 @@ public class ResultSearchPage extends AbstractPage {
 
     public void clickOnListViewButton() {
         assertElementPresent(listViewButton);
-        if (listViewButton.isClickable()){
-            listViewButton.click();
-        }
+        listViewButton.click();
     }
 
     public void clickOnAddToBasketButtonSingleItemPage() {
@@ -57,5 +55,9 @@ public class ResultSearchPage extends AbstractPage {
         assertElementPresent(goToBasketButtonModal);
         goToBasketButtonModal.click();
         return new CardPage(driver);
+    }
+
+    public boolean isListViewButtonActive() {
+        return listViewButton.getAttribute("class").contains("active");
     }
 }

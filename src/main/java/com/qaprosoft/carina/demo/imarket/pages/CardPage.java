@@ -3,6 +3,7 @@ package com.qaprosoft.carina.demo.imarket.pages;
 import com.qaprosoft.carina.core.foundation.webdriver.decorator.ExtendedWebElement;
 import com.qaprosoft.carina.core.gui.AbstractPage;
 import com.qaprosoft.carina.demo.imarket.user.User;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.FindBy;
 import org.testng.Assert;
@@ -47,8 +48,25 @@ public class CardPage extends AbstractPage {
     public void typeUserContactInfoWithoutEmail(User user) {
         clickOnNameInput();
         inputText(nameInput, user.getName());
+        checkInput(nameInput, user.getName());
         clickOnPhoneInput();
         inputText(phoneInput, user.getPhone());
+        checkPhoneInput(phoneInput, user.getPhone());
+    }
+
+    private void checkPhoneInput(ExtendedWebElement phoneInput, String phone) {
+        String phoneString = phoneInput.getElement().getAttribute("value");
+        phoneString = StringUtils.replace(phoneString, "-", "");
+        phoneString = StringUtils.replace(phoneString, ") ", "");
+        Assert.assertTrue(phoneString.contains(phone));
+    }
+
+    public boolean isNameInputPresent() {
+        return nameInput.isPresent();
+    }
+
+    public boolean isPhoneInputPresent() {
+        return phoneInput.isPresent();
     }
 
     private void clickOnPhoneInput() {
@@ -141,5 +159,9 @@ public class CardPage extends AbstractPage {
 
     private void inputText(ExtendedWebElement extendedWebElement, String text) {
         extendedWebElement.type(text);
+    }
+
+    private void checkInput(ExtendedWebElement extendedWebElement, String s) {
+        Assert.assertTrue(extendedWebElement.getElement().getAttribute("value").equalsIgnoreCase(s));
     }
 }

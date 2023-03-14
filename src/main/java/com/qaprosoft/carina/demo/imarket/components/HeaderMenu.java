@@ -7,6 +7,8 @@ import lombok.Getter;
 import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.testng.Assert;
 
 @Getter
 public class HeaderMenu extends AbstractUIObject {
@@ -38,6 +40,10 @@ public class HeaderMenu extends AbstractUIObject {
         inputSearchField.click();
     }
 
+    public boolean isLinkToPersonalPagePresent() {
+        return linkToPersonalPage.isPresent();
+    }
+
     public LoginItem clickOnLoginButton() {
         assertElementPresent(loginButton);
         loginButton.click();
@@ -55,6 +61,11 @@ public class HeaderMenu extends AbstractUIObject {
         inputSearchField.type(text);
     }
 
+    public boolean isInputTextInSearchFieldPresent(long timeout) {
+        return inputSearchField.isPresent(timeout);
+    }
+
+
     public ResultSearchPage clickOnSearchButton() {
         assertElementPresent(searchButton);
         searchButton.click();
@@ -64,6 +75,16 @@ public class HeaderMenu extends AbstractUIObject {
     public ResultSearchPage showGoodsBySearchQuery(String query) {
         clickOnSearchField();
         inputTextInSearchField(query);
+        checkInput(inputSearchField, query);
         return clickOnSearchButton();
+    }
+
+    public ExtendedWebElement getLinkToPersonalPage() {
+        waitUntil(ExpectedConditions.visibilityOf(linkToPersonalPage.getElement()), EXPLICIT_TIMEOUT);
+        return linkToPersonalPage;
+    }
+
+    private void checkInput(ExtendedWebElement extendedWebElement, String s) {
+        Assert.assertTrue(extendedWebElement.getElement().getAttribute("value").equalsIgnoreCase(s));
     }
 }
